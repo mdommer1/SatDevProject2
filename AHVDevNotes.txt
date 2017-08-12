@@ -1,0 +1,1791 @@
+new fields
+
+MSA - Idaho only Medical Savings Account
+HSA - 
+
+
+on Add New Member form....
+Additional Idaho MSA information:
+  instead of two boxes
+  
+
+Fields Needed
+ for MSA only:
+    Put next to member Info box in lower right corner to the right of the existing fields
+    TaxFilingStatus: Single or Joint
+    Do you also have a HSA?  Y/N
+    Do you also have a flexible spending account (FSA)? Y/N
+
+
+on the add New Member form...
+Explore  Change acct type  dropdown value MSA to Idaho MSA
+
+clients.acct_type
+values list: "HSA";"MSA"
+
+
+on
+main menu
+  Employees list
+    Employer Button
+      view Employees button
+        zoom
+
+done resolve Enter Parameter Value temp_depop_cl1.2016
+
+Treasure Valley Coffee, Inc.
+Search Jose Aguas -  Test add 
+
+
+
+
+done show taxFilingstatus
+done have HSA
+done have FSA
+done ....columns after account type
+
+
+
+don eGet rid of parameter value  on that zoom
+done temp_depop_cl1.2017   ' this year is missing when no deposits done have been recorded for the 2017 year
+' the field is sometimes missing because the temp_depop_cl1 table is recreated and since it is 
+' based on a crosstab query the values (field names) are sometimes different
+
+Macro: M_f_client.T_Employeefromemp
+set warnings no
+q_temp_Plan 00     ' empty out the temp_plan temporary table
+q_temp_plan        ' append ID_client and PlanNumber into the temp_plan table
+Q_depo_emp_now     ' make the temp_depop_cl1 temp table based on the data in Q_clientdepo 
+q_depo2013         ' create the temp_add13 table 
+q_depo2013 - add   ' add the temp_add13 records to temp_depo_now
+open F_emp_clients_zoom 
+
+
+
+SELECT clients.ID_CLIENT, clients.PlanNumber, clients.FirstName, clients.LastName
+FROM clients
+WHERE (((clients.PlanNumber)=[Forms]![Employers]![txtCompanyID]));
+' try A + Manufacturing
+' try Treasure Valley coffee
+
+
+SELECT clients.ID_CLIENT, clients.PlanNumber, clients.FirstName, clients.LastName, clients.acct_type
+FROM clients;
+
+try shirley epperson
+
+
+convert macro to vb...
+
+strsql = strsql & "" 
+strsql = strsql & " SELECT [Deposit Form].ID_CLIENT
+strsql = strsql & "      , [Deposit Form].[For Year]
+strsql = strsql & "      , Sum([Deposit Form].Amount) AS SumOfAmount 
+strsql = strsql & " INTO tblTmpYearlyDeposits
+strsql = strsql & " FROM [Deposit Form]
+strsql = strsql & " WHERE ((([Deposit Form].[Plan #])='0007146'))
+strsql = strsql & " GROUP BY [Deposit Form].ID_CLIENT, [Deposit Form].[For Year]
+strsql = strsql & " HAVING ((([Deposit Form].[For Year])=2016 
+strsql = strsql & "       Or ([Deposit Form].[For Year])=2017) 
+strsql = strsql & "    AND ((Sum([Deposit Form].Amount))>0));
+
+strsql = strsql & "" 
+strsql = strsql & " UPDATE temp_depop_cl1 INNER JOIN tblTmpYearlyDeposits ON 
+strsql = strsql & " temp_depop_cl1.ID_CLIENT = tblTmpYearlyDeposits.ID_CLIENT 
+strsql = strsql & " SET temp_depop_cl1.DepositsPriorYear = [tblTmpYearlyDeposits].[SumOfAmount]
+strsql = strsql & " WHERE (((tblTmpYearlyDeposits.[For Year])=2016));
+
+strsql = strsql & "" 
+strsql = strsql & " UPDATE temp_depop_cl1 INNER JOIN tblTmpYearlyDeposits ON 
+strsql = strsql & " temp_depop_cl1.ID_CLIENT = tblTmpYearlyDeposits.ID_CLIENT 
+strsql = strsql & " SET temp_depop_cl1.DepositsCurrentYear = [tblTmpYearlyDeposits].[SumOfAmount]
+strsql = strsql & " WHERE (((tblTmpYearlyDeposits.[For Year])=2017));
+
+
+
+
+
+
+done Hide the show deposits button on employee's list
+
+done No Green 
+done Yes Red on the two new Y/N answers
+
+done Add COV Type as column type 
+
+
+
+
+on main menu, deposits
+  members deposits
+  add the three new fields to the bottom of the Member's deposits box
+done also account type
+done     add dob
+done     deposit hold
+done     coverage type           cli_02
+done     tax filing status       TaxFilingStatus
+done     ytd contrib
+done     does person have hsa    AlsoHasHSA
+done     does person have fsa    AlsoHasFSA
+done     current year YTD
+done     prior year YTD
+
+on bank deposit employer check window...
+remove the * (new row) to the bank deposit employer check window
+
+done remove plan#treasu column 
+done remove E or C column
+remove Type column
+
+add deposit hold
+add cov type
+add three new fields
+
+
+on closed accounts screen
+   add the three new fields there too
+
+
+back on the add member and view member forms
+add 
+ Policy title char(100)
+ Co-Pays? Y/N dropdown
+
+
+lexicon:
+  HEQ  Health Equity    - 
+
+
+
+
+/* To prevent any potential data loss issues, you should review this script in detail before running it outside the context of the database designer.*/
+BEGIN TRANSACTION
+SET QUOTED_IDENTIFIER ON
+SET ARITHABORT ON
+SET NUMERIC_ROUNDABORT OFF
+SET CONCAT_NULL_YIELDS_NULL ON
+SET ANSI_NULLS ON
+SET ANSI_PADDING ON
+SET ANSI_WARNINGS ON
+COMMIT
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.clients ADD
+	TaxFilingStatus char(6) NULL,
+	AlsoHasHSA char(1) NULL,
+	AlsoHasFSA char(1) NULL,
+	PolicyTitle varchar(100) NULL,
+	HasCoPays char(1) NULL
+GO
+ALTER TABLE dbo.clients SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+
+
+
+
+--------------------------
+
+
+on new accounts
+
+rename insurance to insurance carrier
+
+next to it add policy title
+push fields down to next line if needed
+
+follow on-line field order
+
+Default has Co Pays to No on the add new member
+
+auto retro populate all existing Has Co Pays to No
+
+for all MSA's auto retro populate to Single, but first
+check the comments fields for presence of 'Joint'
+and produce a list of people to change for review by Adam
+
+
+
+Old: Archer MSA
+
+New: Idaho MSA
+start with accounts 111
+or HSA
+
+     
+
+main menu
+
+new accounts
+  New Account Data Verification
+     ask for a bank
+       Health Equity   - a lot    - a biggie in the HSA market
+       Idaho Indepenent Bank        
+       Home Federal - a few
+       Bank Corp
+     ask for a date range
+
+preview or print
+
+
+add go to page 2 AND goto page 3
+
+     
+
+only shows health equity
+
+build a build / send email capability...
+near email fields...
+on client - add a contact client or email button
+with a list of templates
+
+----------
+
+
+main menu
+misc reports
+BC Depost reports - checks  (bank corp)
+  add new fields
+ytd
+cov type
+acct type
+birthday
+tax filing status
+also has HSA
+Also has FSA
+Deposit Hold
+change Expr1 to First Name
+Add Last Name
+
+
+all the same for wire transfer
+
+
+-- check into applying rules for HSA
+
+
+-- check into MSA rules
+
+
+the rules are used to then warn the auditor about contributions
+
+* on Depsit form populate bank if client record has bank on file
+
+on the deposit info form
+the add records should check
+for over-contribution based
+ on dob
+tax filing
+ytd
+
+
+maybe....
+on bank deposit employer check
+change bank from 
+2
+to 2 - bank name here
+
+
+
+on bank deposit employer check
+
+
+frmClientTaxFilingStatus
+SELECT clients.ID_CLIENT INTO tblTmpMSAClientsWithJointNote
+FROM Notes INNER JOIN clients ON Notes.ID_CLIENT = clients.ID_CLIENT
+WHERE (((clients.acct_type)="MSA") AND ((Notes.Notes) Like "*Joint*"))
+GROUP BY clients.ID_CLIENT;
+
+
+
+Health Equity   - HSA
+  Michael Toth
+  Gregory Taylor
+  Mark Chaboyer
+
+IIB - MSA
+  David Evans
+  Brad Zollinger
+  Jared Donigan
+
+
+msa
+tax fileing status  (after Drivers License fields)
+has hsa yn          (after TaxFiling Status)
+has fsayn           (after Has HSA)
+
+
+
+hsa
+ins policy title (after Insurance Carrier)
+cov type sing/fam ( after deductible)
+has co-pays yn (after Coverage)
+
+
+
+New Account Verification
+
+
+SELECT clients.*, [Payment Information].[Payment Method], [Payment Information].[Date Received], [Payment Information].[Amount Received], [Payment Information].[Fees paid for], [Payment Information].[Check #], clients.Bank_maidn, clients.PADD, clients.Pcity, clients.Pstate, clients.Pzip, clients.Bank_ID, Employers.CompanyName
+FROM Employers RIGHT JOIN ([Payment Information] RIGHT JOIN clients ON [Payment Information].[AHV Account #] = clients.AHVAccountNumber) ON Employers.CompanyID = clients.PlanNumber
+WHERE (((clients.Bank_ID)<>3) AND ((clients.DateAccountOpened) Between [Enter Start Date] And [Enter Ending Date]));
+
+
+
+IIB
+
+SELECT clients.*, [Payment Information].[Payment Method], [Payment Information].[Date Received], [Payment Information].[Amount Received], [Payment Information].[Fees paid for], [Payment Information].[Check #], clients.Bank_maidn, clients.PADD, clients.Pcity, clients.Pstate, clients.Pzip, clients.Bank_ID, Employers.CompanyName
+FROM Employers INNER JOIN ([Payment Information] RIGHT JOIN clients ON [Payment Information].[AHV Account #] = clients.AHVAccountNumber) ON Employers.CompanyID = clients.PlanNumber
+WHERE (((clients.Bank_ID)=9) AND ((clients.DateAccountOpened) Between [Enter Start Date] And [Enter Ending Date]));
+
+
+SELECT Count(clients.ID_CLIENT) AS CountOfID_CLIENT
+FROM clients
+WHERE (((clients.Bank_ID)<>3 And (clients.Bank_ID)<>9) AND ((clients.DateAccountOpened) Between #3/1/2017# And #3/10/2017#));
+
+American Health Value
+
+Billing Process
+
+Master settings
+Make a note of next billing invoice number
+then delete it
+click un update next inv#
+
+happens couple of times a month
+
+close the master settings
+
+h:\masterdb\AHV_Raw_Billing database
+
+step 1
+select billing month
+? possible popup what has been billed or needs to be billed
+
+click inc (include checkbox)
+
+step 2
+specify invoice date (like a week or two to review the hardcopies)
+
+
+step 3 only if employer bills
+
+step 4
+  generate member bills
+     takes about a minute
+  view member bills
+
+Four types of Invoices
+1 Paper Invoice
+2 EFT  (true EFT)
+3 Credit Card
+4 EFT other (all health equity accounts)
+
+Used to be able to see an account balance!!!
+!!! need to see account balance !!!
+
+
+ users then spend time checking all for accurracy
+
+
+Assign Invoice Numbers
+Print Invoice only
+Post All This Batch
+
+
+Main Menu
+  Payments and billings
+    EFT Area
+      
+
+If Health Equity EFT then
+  HEQ Invoice Payment (Type 4)
+  HEQ Invoice Payment (Type 4) SEND FILE
+
+      
+
+
+
+
+Is Mark Heiman HSA?
+
+the Also has HSA and FSA now use the full words "Yes" and "No"
+
+The the Employees List Zoom, the Tax Filing Status, Also has HSA and Also has FSA will be the blue background color for non-MSA account types.
+
+fixed Enter Parameter Value temp_depop_cl1.2016 message that appears when opening the Employees List zoom
+
+view the new fields on the Deposit Information form
+
+The Change all to C or E does this:
+It changes the Type_depo field in Deposit_temp table
+
+Question: The selection of employees for the employer deposit screen includes criteria stating that 'depo_hold is NULL'.  Should I show employess with a deposit hold?  no
+
+
+  Depo_to_e
+    Q_temp_depo_E
+
+  depo_to_c
+    QDepo_BC001_NW_IIB_daydepo
+      this adds records to A_IIB_depo_day
+      from Clients-[Deposit Form]-T_IIb_transcode
+      Where [Deposit Form].[Date forwarded to Home 				Federal] = date
+        and Bank = 9 
+    Q_temp_depo_C
+
+
+Add new fields to Q_depotemps
+Q_depotemps needs is Deposit_Temp
+
+Change M_Deposit.depo_temp1 to code
+  set warnings false
+  Q_depo_temp 02
+  Q_depo_temp 02_delemp
+  Q_depo_temp 02_zz_Max_1
+    created a temp table with client Max Date Deposit from [Deposit Form] table
+  Q_depo_temp 02_zz_Max_2
+    populates Deposit_temp.LastDepoDate with temp value
+  Q_depo_temp 02_zz_max_9
+    SumOfDeposits for 2016
+  Q_depo_temp 02_zz_max_9a
+     
+  Q_depo_temp 02_zz_max_10
+    SumOfDeposits for 2011
+  Q_depo_temp 02_zz_max_7
+    SumOfDeposits For2017
+  Q_depo_temp 02_zz_max_7a
+  Q_depo_temp 02_zz_max_10a
+
+
+Deposit Not macro:
+  set warnings no
+  Q_depo_temp 03
+  Q_demp_temp 04
+  Q_depo_temp 01
+  Msgbox "Post of Deposits is done!!!"
+  Set temp_chkAmt to 0
+
+
+Delete-No Post macro:
+  M_deposit.depo_temp0
+  Q_depo_temp 01
+  Close the F_demp_temp window
+
+    
+New tasks as of 3/15/2017 5:30 pm:
+
+done3/15 All MSA need to be single - 504 of then 
+
+done3/15 Hide depost hold column on empployer bank deposit form.
+
+done3/15 add an allowable amount column
+
+done3/15 AllowableDeposit
+
+done3/15   AnnualMaximum
+
+done3/16  check individual value calc method
+          test Frances Ciarlo for MSA Single
+          test Melinda McDaniel for MSA Joint
+          widen the 4 money columns
+
+done3/16  test Also Has HSA, FSA conditional formatting - use 1601039 for testing
+          test Emily Abel
+
+done3/15 Hide the Change all to C/E to non visible
+
+Warn if about to change items (like select a new employer) before posting
+
+done3/15 Add Age to next to Birthday on the Deposit
+
+done3/16 Add Age to individual deposit
+
+done3/16 for HSAs: conditional formatting:
+	 Age 0 to 54	default text color
+	 Age 55 to 63	green     - like Karen Nalley
+	 Age 64		yellow    - like David Nixon
+	 Age 65+	red       - like Mark Cogen
+
+done3/16 Remove AccountType: Account type:  double label
+
+done3/16 Make values bold under members deposits box
+
+done3/16 warnings  if over contribute - individual
+
+done3/17 warnings  if over contribute - employees
+
+
+
+done3/17 print out report who is going to over contribute
+
+done3/16 yellow if deposit will oc (over contrib) - individual
+
+done3/16 yellow if deposit will oc (over contrib) - employees
+
+done3/17 Posting this contribution deposit batch will result in o/c for 
+   		Person A
+		Person B
+   		Person C
+
+done3/17 Present the MSA/HSA account message
+
+done3/17 Remove the idaho idependent bank labels
+
+???On add member  policy type and co pay to form
+
+Add google type list
+
+done3/17 Global edit of AlsoHasMSA and AlsoHasFSA for All MSA clients
+
+done3/17 removed the old Account Data Verification button
+
+done3/17 smart/auto bank selection after company selection on Bank Depsit Employer check form
+
+done3/17 Remove the old/new button with the newonly
+
+done3/17 Add Tax filign stat, has hsa had fsa to New acoutn verif for iibs
+
+** Fix cell phone number and authorized signer cell phone number
+  cell phone number on members form is the FaxNumber Field
+  cell phone number on New members form is the FaxNumber field
+  
+done3/17 added cell phone to New HSA Account Verfication report
+
+
+new field add Joint account owner cell phone number  JointAcctOwnerCellPhn
+
+new field add joint account owner mother's maiden name  JointAcctOwnerMotherMaidenName
+
+mother's maiden name goes after dob
+
+Cell phone goes after mother's maiden name
+
+Remember path specified in save of type IV spreadsheets
+
+Name of type 4 EFT file names:    Fees_YYYYMMDD.xls
+
+clean up bencalc (benefits calculator) - used to pay agents after more meetings
+
+
+
+
+
+Notes for 3/17 call:
+
+try to send out bills once per month
+AHV_Raw_Billing
+step 4 view members bills
+form caption Invoices to Idividuals and employees
+fix acct_bal value on the invoices to Individuals and Employees form
+
+assign invoice numbers
+print invoice only 
+post all this batch
+
+fix invalid use of null on search combox
+
+
+
+EFT Steps
+payment sand billings
+EFT Area
+EFT final posting - to make sur ea file is not currently in process
+
+go to step 2
+click clear this batch
+#1 run new batch
+if there are errors then edit errors
+**   add a jump to from the edit errors form to the member form
+**   new feature - list all edit errors in a subform instead of one rec per page
+
+after cleanup of errors, clear this batch and run new batch
+the click edit all
+switch to datasheet view
+verify that no values exist in errorcode column
+
+
+
+build excel sheets
+modify them
+create eft file
+transmit eft file
+
+
+
+
+Health Equity Invoice paymetn tpe 4 disucssion....
+
+step 1 run new list - make faster
+  possibly building a list of outstanding payment for Type 4 EFTs
+
+possibly - alter step to to skip creating records with  negative amoutn like Scott Adams
+this does not happen very often
+
+** research how clients having both and iib msa and a hqy hsa are being double- invoiced.
+
+** check into why the HQY routing  and Bank_ACC fields exist twice on right side of member form
+
+back on Q_Heq_FEEs form - sort by HSABalance and to then make determinations on if billing types 
+
+
+** allow change of payment method on invoice edit screens if able
+
+-- end of time with Alyssa
+
+** MSA Clients Bulk Edit form - change to bank 9  IIB only MSAs
+
+
+
+on Members form put policy title after Insurance company
+on members form put copays yes no after effetive and before Mname
+
+on iib new account verificaton hardcopy make sure that authoirzed signer cell is the correct field and not the client cell
+
+check Mothers maiden name on autohrozed signer (joint accoutn holder)
+
+
+
+put Joint account holder cell phone number in the Joint accout holder info box on members form page 3
+on employer deposit screen swap 2016 and YTD 2017 
+put new system 2012 up and far right
+change new system 2012 to System rev. 20170317a for example
+
+
+
+
+
+from scratchpad:
+Test employer
+1601039
+
+to save a record in code:
+DoCmd.DoMenuItem acFormBar, acRecordsMenu, acSaveRecord, , acMenuVer70
+
+New tasks as of 3/15/2017 5:30 pm:
+
+done3/15 All MSA need to be single - 504 of then 
+done3/15 Hide depost hold column on empployer bank deposit form.
+done3/15 add an allowable amount column
+done3/15 AllowableDeposit
+done3/15   AnnualMaximum
+done3/15 Hide the Change all to C/E to non visible
+done3/15 Add Age to next to Birthday on the Deposit
+
+done3/16  check individual value calc method
+          test Frances Ciarlo for MSA Single
+          test Melinda McDaniel for MSA Joint
+          widen the 4 money columns
+done3/16  test Also Has HSA, FSA conditional formatting - use 1601039 for testing
+          test Emily Abel
+done3/16 Add Age to individual deposit
+done3/16 for HSAs: conditional formatting:
+	 Age 0 to 54	default text color
+	 Age 55 to 63	green     - like Karen Nalley
+	 Age 64		yellow    - like David Nixon
+	 Age 65+	red       - like Mark Cogen
+done3/16 Remove AccountType: Account type:  double label
+done3/16 Make values bold under members deposits box
+done3/16 warnings  if over contribute - individual
+done3/16 yellow if deposit will oc (over contrib) - individual
+done3/16 yellow if deposit will oc (over contrib) - employees
+
+
+done3/17 warnings  if over contribute - employees
+done3/17 Warn if about to change items (like select a new employer) before posting
+done3/17 print out report who is going to over contribute
+done3/17 Posting this contribution deposit batch will result in o/c for 
+   		Person A
+		Person B
+   		Person C
+done3/17 Present the MSA/HSA account message
+done3/17 Remove the idaho idependent bank labels
+done3/17 Global edit of AlsoHasMSA and AlsoHasFSA for All MSA clients
+done3/17 removed the old Account Data Verification button
+done3/17 smart/auto bank selection after company selection on Bank Depsit Employer check form
+done3/17 Remove the old/new button with the newonly
+done3/17 Add Tax filign stat, has hsa had fsa to New acoutn verif for iibs
+done3/17 added cell phone to New HSA Account Verfication report
+
+
+
+???On add member  policy type and co pay to form
+
+Add google type list
+
+
+** Fix cell phone number and authorized signer cell phone number
+  cell phone number on members form is the FaxNumber Field
+  cell phone number on New members form is the FaxNumber field
+  
+Client Fields:
+  Maiden                 - never used
+  Mother_Maiden_Name     - used 472 times - located in Page3 Additional Idaho MSA Information, Joint Account Holder Info
+  Bank_maidn	       - used 32651 times!
+  JointAcctOwnerMotherMaidenName - new field
+
+
+new field add joint account owner mother's maiden name  JointAcctOwnerMotherMaidenName
+Are we to use this as a new field?? or still just use Mother_Maiden_Name in Page3
+Should Mother_Maiden_Name as JointAcctHolder be moved to Page 1 or exist on Page1 and Page3?
+mother's maiden name goes after dob - see line above
+
+new field add Joint account owner cell phone number  JointAcctOwnerCellPhn - added
+Cell phone goes after mother's maiden name - added to just below spouse on page 1
+
+
+
+
+Remember path specified in save of type IV spreadsheets
+
+Name of type 4 EFT file names:    Fees_YYYYMMDD.xls
+
+clean up bencalc (benefits calculator) - used to pay agents after more meetings  wait for new email describing benefit calculation codes
+
+Speed up Fees for HEQ (Type 4 billing only) Step #1
+
+add ability to be able to delete specific line items (but keep them for future biling)
+add ability to change the payment method on step 1 query
+
+
+
+
+History...
+HSA
+auth signer, but not joint account holder
+
+
+MSA - can have joint account holder
+
+
+
+
+
+3/22/call:
+
+
+
+done - please check
+
+  Add new fields to left side of   Members!!!
+
+  brokerid     BrokerIDNumber
+  brokername
+  brokers name
+  insurance carrier InsuranceCompany
+  policy title      PolicyTitle
+  effective         InsurEffective
+  deduct            InsuranceDeduct
+  cov		  cli_02
+  has copays	  HasCoPays
+
+  BrokerID          BrokerIDNumber
+  OldPlan		    OldPlanNumber
+  Bank	          Bank_ID
+  Fed/State	  TypeOfMsa
+  Jnt/Ind		  JointOrIndividual
+  Funding		  EmployerFunded
+  COV		  cli_02
+  Insurance Company InsuranceCompany
+  Deductible	  InsurDeduct
+  Effective	  InsurEffective
+  Mname:		  Bank_maidn
+  Account Type	  acct_type
+  Export Type	  export_type
+  Investments	  Delaware
+
+
+
+
+
+
+
+
+
+done Move Joint Acct Moth Maid anem
+done and 
+done cell to Additional Idaho MSA Information
+
+done change name to 'Additional Account Information'
+
+done enable the additional account information all-time
+
+split member's deposit and employer's deposit
+
+BenCalc discussion
+  used for processing commissions for brokers
+  dump old bencalc
+  force use of new list of Bencalcs
+  translate old bencalcs to new bencalcs
+
+done check for dupes in h:\aaa\fees_20161108 -determine if pattern exists
+  -- no errors on most recent run
+
+done Fix the LinkMasterFields property setting error.
+
+done fix the on current error
+
+
+
+
+Work on 3/24:
+BenCalc notes
+ Members Form Benefit Charge Calc field
+
+   Name: Combo330
+   Control Source: bcpack
+
+   Name: Text880
+   Control Source: combo330.column(1), which is BCCalc.bcplan1
+
+
+  Benefit Calculator - Benefit Billing Calculations form
+    All Med Care Charges are obsolete
+    Data bound to : BCcalc table
+    Package Name: bcPack
+
+
+dbo.clients.BenCalc_id not used - only filled with NULL and 0 values
+
+dbo.clients.bcpack is the active field
+
+
+new table tblBCCrosswalk
+
+
+AHV_RAW_Billing.mdb
+    Employer and Member 
+      Step 1
+        Select Billing Months
+          open F_timeframe
+            T_bill_frame - list of months with a date end - possible change to perpetual
+
+      Step 2
+	Set an Invoice Date
+
+      Step 3
+	Generate Employer Bills
+	  
+
+	View Employers Bills
+
+      Step 4
+	Generate Member Bills
+
+
+4/5 meeting
+
+  Deposits splash page needed still
+  
+
+
+Chastity checks contribs to idaho independent bank - review on a daily basis
+
+getting ready to epxpor t to IIB
+
+Deposit exports
+main menu
+  AHV Reports (Day BAlances)
+  input date of deposits (like yesterday)
+  open IIBDep040417.txt in h:\ftp\iib\out folder
+  display the count and money total
+  count of msa's
+  count of hsa's
+  
+change exportIIB procedure to 
+ show the transactions, allow for code 
+changes and then create the text file and create a new email 
+
+transaction codes 
+MSA Deposit is 000051
+HSA current year is 000075
+HSA prior year is 000077
+
+
+* add open email window box on members screen and employers screen
+* add open email window box on members screen and employers screen
+
+
+walk thru of posting procedure
+payments and billings
+HEQ Invoice Payment (Type 4)  (the blue one)
+review list - remove bad records
+
+
+Queries of BenCalc work:
+-- not used
+SELECT     BenCalc_id, COUNT(ID_CLIENT) AS RecCount
+FROM         clients
+GROUP BY BenCalc_id
+
+-- here is what is used
+SELECT     bcpack, COUNT(ID_CLIENT) AS RecCount
+FROM         clients
+GROUP BY bcpack
+ORDER BY bcpack
+
+
+SELECT     ID_CLIENT AS RecCount, bcpack, BC_rolldate, BC_Eligible, BC_paid, BC_maxamt, BC_over, BC_other
+FROM         clients
+ORDER BY RecCount
+
+
+-- populate the crosswalk
+SELECT     clients.bcpack, COUNT(clients.ID_CLIENT) AS RecCount
+FROM         clients INNER JOIN
+                      BCCalc ON clients.bcpack = BCCalc.bcpack
+GROUP BY clients.bcpack
+HAVING      (NOT (clients.bcpack IS NULL))
+ORDER BY clients.bcpack
+
+
+-- identify garbage records in clients.bcpack field
+SELECT     clients.bcpack, COUNT(clients.ID_CLIENT) AS RecCount, clients.Active, clients.FirstName, clients.LastName
+FROM         clients LEFT OUTER JOIN
+                      BCCalc ON clients.bcpack = BCCalc.bcpack
+WHERE     (BCCalc.BenCalc_id IS NULL) AND (clients.Active <> 0)
+GROUP BY clients.bcpack, clients.ID_CLIENT, clients.Active, clients.FirstName, clients.LastName
+HAVING      (NOT (clients.bcpack IS NULL))
+ORDER BY clients.bcpack
+
+-- have a look at BCCalc
+
+select * from BCCalc
+
+
+
+-- end of queries
+
+
+
+4/12
+
+add to table: Deposit Form
+ID_client
+Date Deposit
+Amount
+Date Forwarded
+Enter by
+For Year
+ID_Employer	
+AHVAccount
+Bank ID
+Type_Depo
+
+MD used trimmed down version of existing indivudal deposit screen, in a data entry mode
+
+
+
+master settings
+  re-update next inv #
+H:\master data\raw billing
+  step 1
+   select billing month
+   select Jan, April
+
+   step 4 genereate bills
+
+
+see Word Document - duplicate record odd balls at bottom of list need to be 'merged'
+
+
+
+4/19/2017
+
+Question: when viewing the records on the Payment to be Posted from HEQ, do you see only Health Equity accounts or additional accounts?
+
+Only one point in the process of working thru the HEQ billing is there a reference to the BenCalc records - in final states of making sure when in all other billing processes the BenCalc table is referenced so that code changes can be made in all needed places
+
+Check for dupes in clients by last name and ssn
+There are 1336 cases of duplicate Last Name, SSN in the clients folder
+
+There are 99 cases of duplicate Active Last Name, SSN clients
+
+There are 781 cases of duplicate Non-Active Last Name, SSN clients.
+
+
+
+5/5/2017 conf call:
+Mike, Lori, Adam, Crystal at Health Equity, 
+
+Keep sending status changes for 30 (user supplied quantity) days
+
+Sandbox account or fake employee?
+  Set up a John Smith for testing.
+
+exclusing date - date after coverage ended
+
+sched for 5/17
+
+
+5/17/2017
+
+Symanted Backup Exec system recovery
+Symantec error message: One or more recover points are NOT available at their locations
+
+Do File Prep
+M_sendfile_prep
+  Q_sendall 01
+    Delete all from AA_HQY_NEWACCOUNT
+  Q_sendall 02
+    Make AA_HQY_NEWACCOUNTtemp from dbo_clients
+    where Bank_ID = 2, Active = True, acct_type = "HSA"
+    (Bank ID = HealthEquity/Old Bancorp Bank)
+  Q_sendall 02 all
+    Append AA_HQY_NEWACCOUNTtemp records to AA_HQY_NEWACCOUNT
+  Q_sendall 03
+    Update Zip and Coverage Type in AA_HQY_NEWACCOUNT
+  Q_sendall_03 a
+    Update the Billing Indicator field to 1 if employers PAY_MO_FEE = 1
+  Q_sendall_03 b
+    Update the Billing Indicator fields to 2 if <> 1 and employers PAY_MO_Fee is null
+  Q_sendall 04
+    Update AA_HQY_NEWACCOUNT with Employer field data if dbo_Employers.HQY_Class = 2
+  Q_sendall 05
+    Update AA_HQY_NEWACCOUNT Employer_Class to "2" if Employer Name is not null and Employer City is not null
+  Q_sendall 06
+    Update AA_HQY_NEWACCOUNT Employer_Class to "1" if Employer Name is null and Employer City is null
+  Q_sendall 07
+    Update AA_HQY_NEWACCOUNT Billing Indicator to "2" if it is NULL
+  Q_sendall 08 del teeff_indv
+    Delete all records from tEEF_AHV_IND_
+  Q_sendall 09 del teeff_emp
+    Delete all records from tEEF_AHV_EMP_
+  Q_sendall 10 load_indv
+    Append AA_HQY_NEWACCOUNT to tEEF_AHV_IND_ where Employer Class = "1"
+  QQQQ_FIX1
+    Append fix_tEEF_AHV_IND_ records to tEEF_AHV_IND_
+  Q_sendall 11 load group
+    Append AA_HQY_NEWACCOUNT to tEEF_AHV_EMP_ where Employer Class = "2" and Employer Name is not null
+
+  Message box The load is ready to send ... pick the file you wish to export!
+
+
+
+Send Both Files
+  Export TEEF_AHV_IND_ file using the TEEF_AHV_IND_6 export spec to 
+    H:\FTP\HealthEquity\out\EEF_AHV_IND_20170517.txt
+
+  Export TEEF_AHV_EMP_ file using the TEEF_AHV_EMP_6 export spec to 
+    H:\FTP\HealthEquity\out\EEF_AHV_GRP_20170517.txt
+
+
+TBA - does nothing
+
+
+what actions trigger the change of status?
+  when the individual's bank changes from HealthEquity to something else
+  when the invididual's bank changes from Something else to HealthEquity
+  when an individual's account changes from Active to Not-Active
+  when an individual's account changes from Non-Active to Active
+  when an employer changes from 'Regular' to 'Use Employer Portal'
+  when an employer changes form 'Use Employer Portal' to 'Regular' (ever ?)
+
+
+to change employee
+copy plan number from Plan# to Old Plan field
+change plan # to 0000001
+change broker ID to ID-00
+
+done create dbo.client_EEF_AHV_EMP_ChangeHist
+
+done create dbo.client_EEF_AHV_IND_ChangeHist
+
+done Add HEQEligStatStartDate field to clients
+
+
+New form: frmHEQEligibilityStatusChange
+
+
+Active Health Equity Bank HSA person Bob Smith
+
+change from Individual to HQY Company
+  create client_EEF_AHV_IND_ChangeHist record
+
+(Clients.PlanNumber = Employers.CompanyID)
+
+
+change from HQY company to individual
+  create client_EEF_AHV_EMP_ChangeHist record
+
+change from HQY company to HQY company
+  create client_EEF_AHV_EMP_ChangeHist record
+
+change from HQY company to non HQY company
+  create client_EEF_AHV_EMP_ChangeHist record
+
+change Member from Active to Non-Active
+  if member is employee of an HQY company then
+    create client_EEF_AHV_EMP_ChangeHist record
+  else
+    create client_EEF_AHV_IND_ChangeHist record
+  endif
+
+change Member from Non-Active to Active
+  if member is employee of an HQY company then
+    ??
+  else
+    ??
+  endif
+
+changing Company's HEQ class from 1-Regular to 2-Use Employer Portal.
+  create a client_EEF_AHV_IND_ChangeHist record for each employee
+
+
+
+
+You are changing Bob Smith's from 'Eagle' to 'Individual'.  This change will move the client from the Employer (Group) eligibility list to the Individual Eligiblilty List.
+
+Bob Smith's previous elibility status will be included in the Employer Eligibility list for the next 30 days, with a cut-off date you provide.
+
+Please provide the date of the change:  __/__/____
+
+
+
+
+You are changing Bob Smith's from 'Individual' to 'ABC Company'.  This change will move the client from the Individual Eligibility list to the Employer (Group) Eligiblilty List.
+
+Bob Smith's previous eligibility status will be included in the Individual Eligibility list for the next 30 days, with a cut-off date you provide.
+
+Please provide the date of the change:  __/__/____
+
+
+
+
+
+
+You are changing Bob Smith's from 'xyz company' to 'ABC Company'.  This change will move the genrate an employer eligibility status change history record.
+
+Bob Smith's previous eligibility status will be included in the Individual Eligibility list for the next 30 days, with a cut-off date you provide.
+
+Please provide the date of the change:  __/__/____
+
+
+
+
+
+When Uncheck active  AND populate closure date
+
+You are changing Bob Smith's status from Active to Non-Active.  This change will remove the client from the Individual/Employer Eligibility List.  
+
+Bob Smith's previous elibility status will be included in the Individual/Employer Eligibility list for the next 30 days, with a cut-off date you provide.
+
+Please provide the date of the change:  __/__/____
+
+
+
+
+
+You are changing ABC Company's HEQ class from 1-Regular to 2-Use Employer Portal. 
+
+25 Employees of ABC Company will be moved from the Individual Elibility List to the Group (Employer) Eligibility List.  Each Employees' previous eligiblity status will be included in the Individual Eligiblity list for the next 30 days, along with the cutoff day you provide.
+
+Please provide the date of the change:  __/__/____
+
+  
+
+
+
+
+  
+
+should nmbr of days that a termination record is sent also be 30 days?
+
+Luke Skywalker
+
+
+Add TEST to the beginning of the file name
+Include at least 10 people, plus luke skywalker
+
+
+
+
+
+
+When displaying the ytd date deposit values on the deposit forms, use the data source behind the BAnk Balance HQY and IIB balance buttons to determine / calculate the YTD VAlues 
+
+HQY Bank Balance:
+QQQ_ahv_bal
+  dbo_AHVBalance
+    YTDEEContr field
+
+
+IIB Bank Balance:
+aaa_QIIB latest client info
+  dbo_IIB_Raw
+
+
+aaa_qq_IIB Dayly
+  dbo_IIB_Raw
+
+
+
+
+test Adam Berry 
+ID_Client: 74500
+Member_ID: 5495205
+AHVAccount: 5495205
+
+
+
+DONE - members, page 2 Year-Report, values should pull from HQY Bank Balance and IIB Balance data sources.
+and make it a rolling three year
+
+done - add email button to the employers form just the right of the email field
+
+DONE - On the add deposit form (individual), verify that if a individudal is found using their name, that all fields are properly populated and that they show up in the misc reports, Deposit Audit report. 
+
+
+
+
+
+
+
+
+
+SELECT Employers.CompanyID, Employers.CompanyName, Employers.City, Employers.State, Employers.Active, Employers.AnnualFeesPaidBy, Employers.DateGroupAdded, Employers.[Date Group Closed] FROM Employers; 
+
+
+
+
+
+select from dbo_AHVBalance
+where MemberID = 1
+and Account Type = 2
+
+
+5/19/2017
+
+new user: Trinity
+new user: Callie   callie@americanhealthvalue.com  
+
+done - repair ability to view history and edit invididual deposit history
+
+  test clientID: 2402267
+
+  forms!F_Deposit form!child67.Form!ID_Deposit
+
+  F_depo_sub_mem
+    DateForwarded to Home Federal_OnClick
+      M_depo_other.deporec
+      
+  open f_deposit form_inv
+  pass the ID_Deposit
+
+done - fix cursor path Employee deposit form top section
+
+calc total on last row or empty bottom row
+
+5/24/2017 11:00 - 
+
+test Adam Berry 
+ID_Client: 74500
+Member_ID: 5495205
+AHVAccount: 5495205
+
+On Deposits, Group(Employer) Deposit when populating the lower datasheet section, add one extra line that appears at the bottom of the rows for calculation ease
+
+On the add deposit form (individual), verify that if a individudal is found using their name, that all fields are properly populated and that they show up in the misc reports, Deposit Audit report. 
+
+Change the Individual Deposit form so that a record in the table is not being created until Add Record button is pressed
+
+??Always show history when recording an Individual deposit
+
+done - Members, page 2 Year-Report, values should pull from HQY Bank Balance and IIB Balance data sources.
+and make it a rolling three year
+
+  Q_clientdepo_one
+    ID_Client
+    Account Number
+    last Name
+    First Name
+    2017
+    2016
+    2016
+    cov
+
+  
+
+done - On Individual Deposit Screen, the Prior Year YTD value should use the new AHV/IIB/Other YTD calc method
+
+done - On Employer(Group) Deposit Screen, the Prior Year YTD value should use the new AHV/IIB/Other YTD calc method
+
+
+Criteria for HQY Bank Balance:
+Bank = Health Equity  (Bank_ID = 2)
+Account Type = HSA    (acct_type = 'HSA')
+HQY Bank Balance:
+QQQ_ahv_bal
+  dbo_AHVBalance
+    YTDEEContr field
+
+
+Crieria for IIB person:
+Bank = "Idaho Independent Bank"  (Bank_ID = 9)
+IIB Bank Balance:
+aaa_QIIB latest client info
+  dbo_IIB_Raw
+
+
+aaa_qq_IIB Dayly
+  dbo_IIB_Raw
+
+
+form_F_deposit form_Individual
+  ShowYTDContribs function
+  YTDContributions function in Module General
+
+
+AHV_SP_CalcYTDContrib ClientID,'YEAR'
+use AHV_SP_CalcYTDContrib 74500,'2017' to get YTD value
+
+
+TESTING DATA
+  IIB Test Case
+  Treasure Valley Coffee
+  1601039
+
+  HQY Test Case
+  Analytic Stress Releiving Inc.
+  0006797
+
+
+HQY Company with Employee Portal
+  Women's Care of Alaska
+  0003702
+
+
+deposits for employees fast now...
+
+
+
+5/26/2017
+check YTD contribs speed and functionality
+
+QryYearReport replacing Q_clientdepo_one on members Page 2 Year-Report for Account Deposit past year and YTD values
+
+gave old look, new look option on Client Deposits by Year screen
+
+on the Deposit screen, fixed the search (by name) field so that after a person is selected the Bank value is populated.  
+
+Added Luke Skywalker as a new Member for testing.
+
+
+account #
+1100014263
+   should be 10000   ind     -       4400   becasue of her hsa allowable  
+
+1150000998
+check employee, emp list zoom   2016 adn 2017 values  - missing for His Concerpts Sprinklers
+
+
+
+**** move 2016 column to after allowable column
+
+Lori
+Ryan
+Doug
+Crystal
+
+
+
+
+6/1/2017
+created H:\FTP\HealthEquity\out\EEF_AHV_IND_TEST_20170601.txt
+emailed Lori asking her to send that file using the sftp
+
+
+6/2/2017
+
+next steps
+luke leaves the employer and returns to individual
+
+
+Change creation of Luke's employer
+
+
+Sunday change luke back to individual
+
+
+If needing to 'cancel' coverage - as if the coverage never existed - use start date and end date as the same date.
+
+
+if somebody changes name or address... make sure start date is not affected
+
+
+if changes in name address or personal information change, use a new date
+
+
+scenario  sign up in march  2017... but sent an 11/1/2015 start.
+
+need to record/report the __effective date__ of the HSA.
+
+
+
+ 
+HEQEligStatStartDate
+
+dbo_clients.DateAccountOpened
+
+tEEF_AHV_IIND_.[Coverage Start Date]
+
+
+
+One or more recovery points are not available at their locations.
+Symantec backup exec system recovery 2010
+
+HQY Company with Employee Portal
+  Women's Care of Alaska
+  0003702
+
+check < and > btns on frmHEQEligibilityStatusChange
+change caption on frmHEQEligibilityStatusChange
+
+
+
+Q_sendall 01
+  deletes all records from AA_HQY_NEWACCOUNT
+Q_sendall 02
+  makes the AA_HQY_NEWACCOUNTTemp table
+Q_sendall 02 all
+  append all from AA_HQY_NEWACCOUNTtemp to AA_HQY_NEWACCOUNT
+Q_send_03 a
+...
+
+
+Employer_Class value to a 1 or a 2
+1 for individual
+2 for emp
+
+What about Billing Indicator??
+
+Lori,
+
+The People listed as having amounts that will result in an over-contribution are there because they have no Tax Filing Status (Single or Joint).
+
+The routine that I wrote that tries to calculate the maximum allowable amount cannot determine which formula to use because the Tax Filing Status was missing, the value returned for the maximum allowable contribution amount for the year was zero.
+
+Please check and add a Tax Filing Status for:
+
+Nicholas Blemaster
+Jordan Crist
+Jason Lacy
+Richard Mihcaelson
+Shawn Sprenger
+
+
+Please let me know if anyting else comes up.
+
+Mike
+
+
+6/21/2017
+
+examining Commissions Pending Check Query:
+SELECT T_commision_payment.[Date Received], T_commision_payment.[Amount Received], T_commision_payment.[Commissions Paid Date], T_commision_payment.commdate, T_commision_payment.BrokerIDNumber, T_commision_payment.comchknum, T_commision_payment.commamt
+FROM T_commision_payment
+WHERE (((T_commision_payment.comchknum) Like "pend"))
+ORDER BY T_commision_payment.BrokerIDNumber;
+
+
+
+Commission steps
+
+00  Delete * from comYearend table
+01  Create Temp_comm_new records based on clients having DateAccoutnOpened between Start and End date Range and a Null T_comm_id field
+02  Update clients.commpassBrokerID field to "ID-01-000" if the clients.BrokerIDNumber="ID-01-000" and a matching record in Temp_comm_new also exists.
+03  Append into Temp_comm_new client records where DateAccountOpened is less than the start day and the BrokerID number <> "ID-01-000" and the T_comm_id is null and the commpassBrokerID = "ID-01-000"
+04  Delete from Temp_comm_new any records where the SetupFee =0 and the AnnualFee=0
+04a Delete from Temp_comm_new any records where the DateAccountOpened < 1/1/2014
+05  Create Temp_comm_payments table based on Payment Information records where Date Received between Date Range and T_comm_id is Null
+06  Update Temp_comm_payments.ID_CLIENT value with the corresponding cal_invoice.ID_CLIENT value if a matching records exists in cal_invoice based on InvoiceID and the Temp_comm_payments.ID_Client value is null
+07  Update Temp_comm_payments.ID_EMPLOYER value if it is null and the ID_CLIENT field is null if Temp_Comm_payments --- cal_invoice --- Employers links exist
+08  Delete Temp_comm_payments records if the Amount Received value is 0 or null
+09  Update Temp_comm_payments.errnum to "new" if a matching Temp_comm_new record exists
+10  Delete Temp_comm_payments records if the errnum value is "new"
+11  Append Temp_comm_new records into the comYearend table
+12  Append Temp_comm_payments records into the comYearend table if the Temp_comm_payments.T_comm_id value is null
+13  Update comYearend.BrokerIDNumber field to clients.BrokerIDNumber
+14  Update comYearend.BrokerIDNumber field to employers.BrokerIDNumber and comYearend.[Plan #] value to employers.companyID if a comYearend.ID_Employer has a matching value in Employers
+15a Update conYearend.comm_stat with [Sales Reps].comm_stat value if a comYearend.BrokerIDNumber = [Sales Reps].BrokerIDNumber
+15b Update comYearend.comm_stat with clients.arch_stat if commYearend.ID_Client = clients.ID_Client and clients.arch_stat = 5
+15c Update comYearend.comm_stat with [Payment Information].arch_stat if commYearend.ID_Payment = [Payment Information].ID_Payment and [Payment Information].arch_stat = 5
+16  Delete comYearend records if the ID_Client is null and the ID_Employer is Null
+17  Update comYearend.Amount Received to be [SetupFee] + [AnnualFee] if the [Amount Received] is null
+18  Delete comYearend records if comYearend.[Amount Received] = 0
+19  Delete comYearend records if the comYearend.comm_stat value = 9
+20  Update comYearend.InvoiceID to 999999999 if InvoiceID is Between [T_mastNum].[annstart] And [T_mastNum].[annend] and t_mastNum onHold value is True
+21  Delete comYearend records if the InvoiceID = 999999999
+22  Update comYearend comrate, repphone, repname, etc field values if comYearend.BrokerIDNumber = [Sales Reps].BrokerIDNumber
+22a Update comYearend.comrate to BCCalc.Bccom_set if BCCalc.BOver_comm = true  (ComYearend --- clients --- BCCalc)
+22b Update comYearend.comrate to BCCald.BOver_set if BCCalc.BOver_comm = true  (ComYearEnd.Plan # --- Employers --- BCCalc
+23  Update comYearend.comrate to 0.2 if it is null
+25  Update comYearend.commamt to [Amount Received] * comrate
+26  Update comYearend.compaidto to "Individual" if it is null
+27  Update conYearend.last name and first name to the client.last name and client.first name
+28  Update comYearend.planname to Employers.CompanyName
+29  Delete comYearend records if the BrokerIDNumber is Null
+30  Update comYearend.planname to Employers.CompanyName if planname is null (via ComYearend.ID_Client --- clients.ID_Client, clients.PlanNumber --- Employers.CompanyID)
+31  Update comYearend.arch_stat to clients.arch_stat if clients.arch_stat = 5 and comYearEnd.ID_Client = clients.ID_Client
+32  Update comYearend.arch_stat to 5 if [Payment Information].arch_stat = 5 and comYearEnd.ID_Payment = [Payment Information].ID_Payment
+100 Update comYearend.Bank_ID and acct_type based on same in clients with Matching ID_CLIENT
+fx1 Update comYearend.In_English to "3) Employer Paid Invoice" if comYearEnd.ID_Payment and comYearend.ID_Empployer are not null
+fx2 Update comYearend.In_English to "2) Client Paid Invoice" if InvoiceID and ID_Payment and ID_client are all not null
+fx3 Update comYearend.In_English to "1) NEW CLIENT ADDED" In_English and InvoiceID are null and ID_Payment = 0 and AHV Account # is not null
+
+display a message that commissions are done
+
+
+
+
+com_post
+01 Delete records in t_toaccountantrepost
+02 Append records from T_toaccountant into t_toaccountantrepost if chknum is not null
+04 
+05
+06
+07
+08
+
+Broker
+  
+Monthly Broker Report
+  commission pending tab
+
+5/1/ to 5/31
+annual fees paid for account or new accounts
+
+
+
+"HSA Account Code"|"Name Prefix"|"First Name"|"Middle Name"|"Last Name"|"Suffix"|"SSN"|"Date of Birth"|"Unspecified 1  "|"Coapplicant Name Prefix  "|"Coapplicant First Name"|"Coapplicant Middle Name"|"Coapplicant Last Name"|"Coapplicant Suffix  "|"Coapplicant SSN  "|"Coapplicant Date of Birth"|"Unspecified 2"|"Street Address"|"City"|"State"|"Zip Code"|"Home Phone"|"Broker State ID"|"Unspecified 3"|"Broker Code"|"Deposit Amount "|"Unspecified 4"|"Email Address"|"Employer_Class"|"Referred By"|"Unspecified 5"|"Coverage Start Date"|"Coverage End Date"|"Employer Name"|"Employer Tax ID"|"Employer Street Address"|"Employer City"|"Employer State"|"Employer Zip Code"|"Employer Phone Number"|"Employer Contact Name"|"Employer Contact Email"|"Billing Indicator"|"Coverage Type"
+88695|""|"LUKE"||"SKYWALKER"|""|"115509999"|8/14/1966 0:00:00|||||||||""|"123 Tatooine Way"|"Mos Isley"|"ID"|"33333-"||""|""|""|""|""|"lukeskywalker@jedi.com"|"2"|""|""|6/25/2017 0:00:00|1/1/2050 0:00:00|"WOMEN'S CARE OF ALASKA"||"2741 DEBARR RD STE 205"|"ANCHORAGE"|"AK"|"99508"|"9072792273"|||"2"|"F"
+
+
+
+
+
+0003702
+Suffix
+Unspecified 2
+2 fields after the dob
+
+
+
+
+Lori,
+
+The H:\FTP\HealthEquity\out folder contains two sets of EEF-AHV files.  The revisions in place now use the preferred method of handling null values so that a string of empty fields look like this: |||||| instead of this: |""|""|""|""|""|""|.
+
+I also double-checked the code that assigned the proper 1 or 2 for individual vs. Employer group, as well as the wording that appears on the prompt when moving a person from an invidividual to a Employer Group.
+
+Two more tests are pending: I'm checking the code that will terminate Luke Skywalker's employment and I'm creating a fictitious company that will contain a couple of fictional people so that the test for when a company begins using the Employee portal is handled properly.  I hope to finish those final steps later today.
+
+Mike
+
+
+
+
+6/28/2017
+
+Employer_Class
+
+Q_sendall 02 all appends AA_HQY_NEWACCOUNTtemp records into AA_HQY_NEWACCOUNT and the Plan Number field becomes the Employer_Class field
+PlanNumber ---> Employer_Class
+
+
+Q_sendall 04 updates the AA_HQY_NEWACCOUNT.[Employer Name] and [Employer City] and other Employer fields to the value stored in the Employers table based a match of the AA_HQY_NEWACCOUNT.Employer_Class field (which will then later change to a 1 or 2) and the Employers.CompanyID field
+!!!*** but only if the HQY_Class equals 2.  This means that the only client records that are populated with Employer data are when the Employers have an HQY_Class of 2 - meaning that they are an employer that has elected to use the employer web portal
+
+
+Q_sendall 05 then updates the AA_HQY_NEWACCOUNT.Employer_Class field to 2 if the [Employer Name] and [Employer City] fields are Not Null
+Q_sendall 06 updates the AA_HQY_NEWACCOUNT.Employer_Class to 1 if both the [Employer Name] and [Employer City] are either Null or ""
+
+All records having and Employer_Class = 1 are records for Individuals
+Q_sendall 10 load_indv filters by Employer_Class = 1
+
+Q_sendall 11 load group filters by Employer_Class = 2
+
+
+
+
+
+Ind
+Billing Indicator
+
+Q_sendall 02_TestGroup creates the AA_HQY_NEWACCOUNTtemp table
+Q_sendall 02 appends dbo_clients.[Billing Indicator] into AA_HQY_NEWACCOUNTtemp.[Billing Indicator]
+
+Q_sendall 02 all appends all AA_HQY_NEWACCOUNTtemp records into AA_HQY_NEWACCOUNT
+
+Q_sendall 07 updates AA_HQY_NEWACCOUNT.[Billing Indicator] to 2 in any case where [Billing Indicator] is Null
+
+Q_sendall 10 load_indv appends AA_HQY_NEWACCOUNT.[Billing Indicator] to tEEF_AHV_IND_.[Billing Indicator]
+
+Q_sendall 10 load_indv_ChangeHistory appends dbo_clients_EEF_AHV_IND_ChangeHist.[Billing Indicator] to tEEF_AHV_IND_.[Billing Indicator]
+
+QQQQ_FIX1 appends fix_tEEF_AHV_IND_.[Billing Indicator] to tEEF_AHV_IND_.[Billing Indicator]
+
+
+Emp
+Billing Indicator
+  
+Q_sendall 11 load group appends AA_HQY_NEWACCOUNT.[Billing Indicator] to tEEF_AHV_EMP_.[Billing Indicator]
+
+
+In the Clients table here is the current value of the [Billing Indicator] field:
+Value        Count
+-------------------------
+Empty         2677
+2            55675
+
+
+Health Equity has an admin fee
+
+
+
+
+
+Luke Skywalker has the following dates in his client record:
+
+
+Birthdate: 8/14/1966
+InsurEffective: 11/1/2016
+DateAccountOpened: 1/26/2017
+HEQEligStatStartDate: 2017-06-28    was generated when we moved him from Individual to Employed by Women's COA on 6/28 (today's test)
+
+
+
+
+
+Q_sendall 02 pulls both DateAccountOpened and InsuranceEffective dates.
+  Insurance Effective is set to HEQEligStatStartDate if it exists, or InsuranceEffective if it does not exist.
+
+
+Q_sendall 02 all then applies the InsurEffective value to the Coverage Start Date
+
+
+When creating an Individual History record...   the routine was using either the HEQEligStatStartDate (if it existed, or the Date Account Opened instead of the InsurEffective date.  This correction has been applied.
+
+
+Remove all quotation symbols from the upload
+
+
+[AHV_SP_QuickSearch]
+
+Use Employers.PAY_MO_FEE for the Billing Indicator
+
+
+
+Default value 2 for all new Employers
+
+
+5 new transmission series:
+7/3/2017 Luke is an Individual
+
+7/4/2017 Move Luke into Christ Fellowship 0801093
+  should trigger an HQY history records because Employer.Pay_MO_Fee is different
+
+7/5/2017 Then Move Luke to American Health Value 0000002
+  should trigger an HQY history record because Employer.Pay_MO_Fee is different
+
+7/6/2017 Then move Luke back to Individual 0000001
+  should not trigger an HQY History record because AHV.Pay_Mo_Fee is a 2 and
+  individuals are a 2 automatically
+
+7/7/2017 Terminate Luke's Account (add date closed, uncheck active)
+
+
+
+
+
+7/7/2017
+ran query to update all Employers.PAY_MO_FEE values to 2 if not currently a 1
+
+checked New Employer form to make sure that any new Employer will receive a PAY_MO_FEE value of 2
+
+Added HQY Admin Fee choice to Add Employer screen with a default of 2
+HQY Admin Fee: 1=AHV Billed, 2=Member is Billed
+
+
+
+
+
+ran Active Bank of Cascades List:
+
+SELECT T_bank.Bank_name, clients.ID_CLIENT, clients.FirstName, clients.LastName, clients.AHVAccountNumber, clients.DateAccountOpened, clients.PlanNumber, Employers.CompanyName
+FROM (clients INNER JOIN T_bank ON clients.Bank_ID = T_bank.Bank_ID) LEFT JOIN Employers ON clients.PlanNumber = Employers.CompanyID
+WHERE (((clients.Bank_ID)=1) AND ((clients.Active)=True))
+ORDER BY clients.ID_CLIENT;
+
+
+
+7/14/2017
+Hillary pulled
+
+Search by Broker name, broker ID
+  like Chris Maurice
+
+send close to close account screen
+
+search by email address search
+
+add old benCalc codes
+
+
+7/18/2017
+Jedi, Inc.: 1234567
+
+
+
+
+
+DoCmd.TransferText acExportDelim, 
+"TEEF_AHV_IND_6 Export Specification", 
+"tEEF_AHV_IND_", "H:\FTP\HealthEquity\out\EEF_AHV_IND_TEST_" & Format(Nz(Forms!F_Masterload!send_date, Date), "yyyymmdd") & ".txt", True, ""
+
+
+
+7/27/2017
+
+built and ran QryEmployersAnnualFeeAnalysis for Lori
+
+
+8/11/2017
+
+Agents (Brokers)
+Q_salesrep
+table: Sales Reps
+
+
+Members
+form: f_broker_cli
+
+Link field: BrokerIDNumber
+clients
+
+
+
+SELECT [Sales Reps].ID_SALEREP, [Sales Reps].FirstName, [Sales Reps].MiddleName, [Sales Reps].LastName, [Sales Reps].Suffix, [Sales Reps].CompanyName, [Sales Reps].StreetAddress, [Sales Reps].City, [Sales Reps].State, [Sales Reps].ZipCode, [Sales Reps].PhoneNumber, [Sales Reps].[Fax Number], [Sales Reps].Email
+FROM [Sales Reps];
+
+
+
+SELECT [Sales Reps].ID_SALEREP, [Sales Reps].FirstName, [Sales Reps].MiddleName, [Sales Reps].LastName, [Sales Reps].Suffix, [Sales Reps].CompanyName, [Sales Reps].StreetAddress, [Sales Reps].City, [Sales Reps].State, [Sales Reps].ZipCode, [Sales Reps].PhoneNumber, [Sales Reps].[Fax Number], [Sales Reps].Email, IIf(IsNull([inACTIVENOTE]),"Y","N") AS IsActiveYN, [Sales Reps].inACTIVENOTE
+FROM [Sales Reps]
+ORDER BY [Sales Reps].LastName, [Sales Reps].FirstName;
+
+
+Account Type: acct_type
+
+from T_acct_type
+
+
+Bank of Cascades
+HealthEquity/Old Bancorp Bank
+Idaho Independent Bank
+
+
+
+
+
